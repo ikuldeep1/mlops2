@@ -18,3 +18,12 @@ resources:
             base_parameters:
               env: dev
           compute: serverless
+
+        - task_key: data_validation
+          depends_on:
+            - task_key: data_ingestion
+          notebook_task:
+            notebook_path: notebooks/01_data_validation.py
+            base_parameters:
+              env: dev
+          compute: serverless
