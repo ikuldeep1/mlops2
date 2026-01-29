@@ -27,3 +27,12 @@ resources:
             base_parameters:
               env: dev
           compute: serverless
+
+        - task_key: feature_engineering
+          depends_on:
+            - task_key: data_validation
+          notebook_task:
+            notebook_path: notebooks/02_feature_engineering.py
+            base_parameters:
+              env: dev
+          compute: serverless
