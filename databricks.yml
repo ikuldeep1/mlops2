@@ -36,3 +36,14 @@ resources:
             base_parameters:
               env: dev
           compute: serverless
+
+        - task_key: train_model
+          depends_on:
+            - task_key: feature_engineering
+          notebook_task:
+            notebook_path: notebooks/03_train_model.py
+            base_parameters:
+              env: dev
+              experiment_name: /Shared/mlops_dev
+              feature_pipeline: /Workspace/Users/krathour13@gmail.com/dbfs_data/feature_pipeline.joblib
+          compute: serverless
