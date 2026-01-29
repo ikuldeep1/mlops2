@@ -47,3 +47,14 @@ resources:
               experiment_name: /Shared/mlops_dev
               feature_pipeline: /Workspace/Users/krathour13@gmail.com/dbfs_data/feature_pipeline.joblib
           compute: serverless
+
+        - task_key: model_register
+          depends_on:
+            - task_key: train_model
+          notebook_task:
+            notebook_path: notebooks/04_model_register.py
+            base_parameters:
+              env: dev
+              experiment_name: /Shared/mlops_dev
+              run_id:
+          compute: serverless
