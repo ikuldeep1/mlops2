@@ -16,5 +16,5 @@ resources:
           notebook_task:
             notebook_path: notebooks/00_data_ingestion.py
             base_parameters:
-              env: dev_kuldeep
+              env: dev
           compute: serverless

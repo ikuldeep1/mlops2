@@ -1,83 +1,63 @@
 # Databricks notebook source
 # notebooks/00_data_ingestion.py
 
+import logging
+
+# ----------------------------
+# Configure Logging
+# ----------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# ----------------------------
+# Environment
+# ----------------------------
 ENV = dbutils.widgets.get("env")
-print(ENV)
-# from pyspark.sql import functions as F
-# from sklearn.model_selection import train_test_split
+logger.info(f"Environment: {ENV}")
 
-# # ----------------------------
-# # Environment
-# # ----------------------------
-# dbutils.widgets.text("env", "dev")
-# ENV = dbutils.widgets.get("env")
+CATALOG = f"mlops_{ENV}"
+SCHEMA = "data"
+logger.info(f"Catalog: {CATALOG}, Schema: {SCHEMA}")
 
-# CATALOG = f"mlops_{ENV}"
-# SCHEMA = "raw"
+# ----------------------------
+# Read raw data
+# ----------------------------
+logger.info("Reading train data...")
+df_train = spark.read.csv(
+    "/Volumes/mlops_data/default/customvolume/train.csv",
+    header=True,
+    inferSchema=True)
+logger.info(f"Train data shape: {df_train.count()} rows, {len(df_train.columns)} columns")
 
-# # ----------------------------
-# # Read raw data
-# # ----------------------------
-# df = spark.read.csv(
-#     "/Volumes/workspace/default/customvolume/water_potability.csv",
-#     header=True,
-#     inferSchema=True
-# )
+logger.info("Reading test data...")
+df_test = spark.read.csv(
+    "/Volumes/mlops_data/default/customvolume/test.csv",
+    header=True,
+    inferSchema=True)
+logger.info(f"Test data shape: {df_test.count()} rows, {len(df_test.columns)} columns")
 
-# columns = ['ph','Hardness','Solids','Chloramines','Sulfate','Conductivity','Organic_carbon','Trihalomethanes','Turbidity']  # numeric columns only
+# ----------------------------
+# Create catalog + schema (DEV ONLY)
+# ----------------------------
+logger.info(f"Creating catalog {CATALOG} if not exists...")
+spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")
+logger.info(f"Creating schema {CATALOG}.{SCHEMA} if not exists...")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{SCHEMA}")
 
-# medians = {
-#     c: df.select(F.expr(f"percentile_approx({c}, 0.5)")).first()[0]
-#     for c in columns
-# }
+# ----------------------------
+# Write Delta tables
+# ----------------------------
+logger.info(f"Writing train data to {CATALOG}.{SCHEMA}.train...")
+df_train.write.mode("overwrite").format("delta").saveAsTable(
+    f"{CATALOG}.{SCHEMA}.train"
+)
 
-# df = df.fillna(medians)
+logger.info(f"Writing test data to {CATALOG}.{SCHEMA}.test...")
+df_test.write.mode("overwrite").format("delta").saveAsTable(
+    f"{CATALOG}.{SCHEMA}.test"
+)
 
-# pdf = df.toPandas()
-
-# # ----------------------------
-# # Stratified split
-# # ----------------------------
-# train_pdf, temp_pdf = train_test_split(
-#     pdf,
-#     test_size=0.30,
-#     stratify=pdf["Potability"],
-#     random_state=42
-# )
-
-# val_pdf, test_pdf = train_test_split(
-#     temp_pdf,
-#     test_size=0.50,
-#     stratify=temp_pdf["Potability"],
-#     random_state=42
-# )
-
-# # ----------------------------
-# # Pandas → Spark
-# # ----------------------------
-# train_df = spark.createDataFrame(train_pdf)
-# val_df   = spark.createDataFrame(val_pdf)
-# test_df  = spark.createDataFrame(test_pdf)
-
-# # ----------------------------
-# # Create catalog + schema (DEV ONLY)
-# # ----------------------------
-# spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")
-# spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{SCHEMA}")
-
-# # ----------------------------
-# # Write Delta tables
-# # ----------------------------
-# train_df.write.mode("overwrite").format("delta").saveAsTable(
-#     f"{CATALOG}.{SCHEMA}.train"
-# )
-
-# val_df.write.mode("overwrite").format("delta").saveAsTable(
-#     f"{CATALOG}.{SCHEMA}.val"
-# )
-
-# test_df.write.mode("overwrite").format("delta").saveAsTable(
-#     f"{CATALOG}.{SCHEMA}.test"
-# )
-
-# print("DEV data ingestion completed")
+logger.info("Data ingestion completed successfully")
