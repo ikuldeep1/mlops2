@@ -1,0 +1,20 @@
+bundle:
+  name: mlops-dev-bundle
+
+targets:
+  dev:
+    workspace:
+      host: https://dbc-d7513240-903a.cloud.databricks.com
+
+resources:
+  jobs:
+    mlops_dev_pipeline:
+      name: mlops-dev-pipeline
+
+      tasks:
+        - task_key: data_ingestion
+          notebook_task:
+            notebook_path: notebooks/00_data_ingestion.py
+            base_parameters:
+              env: dev
+          compute: serverless
