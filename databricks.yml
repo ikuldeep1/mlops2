@@ -18,6 +18,6 @@ resources:
             base_parameters:
               env: dev
               model_alias: dev
-              experiment_name: /Shared/mlops_dev
+              experiment_name: /Shared/mlops_stag
               feature_pipeline: /Workspace/Users/krathour13@gmail.com/dbfs_data/feature_pipeline.joblib
           compute: serverless
