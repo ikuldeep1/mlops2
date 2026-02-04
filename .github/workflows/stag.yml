@@ -1,0 +1,31 @@
+name: Stag Pipeline
+
+on:
+  push:
+    branches: [stag]
+
+jobs:
+  deploy-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+      - name: Configure Databricks auth
+        run: |
+          echo "DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}" >> $GITHUB_ENV
+          echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Validate bundle
+        run: databricks bundle validate
+
+      - name: Deploy bundle
+        run: databricks bundle deploy -t stag
+
+      - name: Run job
+        run: databricks bundle run mlops_stag_pipeline -t stag

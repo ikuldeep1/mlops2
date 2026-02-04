@@ -1,0 +1,23 @@
+bundle:
+  name: mlops-stag-bundle
+
+targets:
+  stag:
+    workspace:
+      host: https://dbc-d7513240-903a.cloud.databricks.com
+
+resources:
+  jobs:
+    mlops_stag_pipeline:
+      name: mlops-stag-pipeline
+
+      tasks:
+        - task_key: data_ingestion
+          notebook_task:
+            notebook_path: notebooks/05_validate_model_staging.py
+            base_parameters:
+              env: dev
+              model_alias: dev
+              experiment_name: /Shared/mlops_dev
+              feature_pipeline: /Workspace/Users/krathour13@gmail.com/dbfs_data/feature_pipeline.joblib
+          compute: serverless
